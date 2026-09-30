@@ -25,3 +25,14 @@ class LexicalError(ReceitaError):
 
 class SyntacticError(ReceitaError):
     kind = "sintático"
+
+
+class SemanticError(ReceitaError):
+    kind = "semântico"
+
+
+class SemanticWarning(ReceitaError):
+    """Problema que não impede a execução."""
+
+    def __str__(self) -> str:
+        return f"aviso [linha {self.line}]: {self.message}"
