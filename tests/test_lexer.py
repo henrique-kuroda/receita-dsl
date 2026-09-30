@@ -121,3 +121,55 @@ cronograma bolo inicio 14:00;
         "COMPRAS", "ID", "PARA", "NUM", "PORCOES", ",", "ID", ";",
         "CRONOGRAMA", "ID", "INICIO", "HORA", ";",
     ]
+
+
+def messages(source: str) -> list[str]:
+    _, errors = lex(source)
+    return [str(e) for e in errors]
+
+
+def test_caractere_inesperado():
+    assert messages("unidade @ pitada") == ["erro léxico [linha 1]: caractere inesperado '@'"]
+
+
+def test_erro_informa_a_linha_correta():
+    assert messages("receita\n# comentário\n\n  $") == ["erro léxico [linha 4]: caractere inesperado '$'"]
+
+
+def test_coleta_varios_erros_e_continua():
+    tokens, errors = lex("ingrediente @ ovos = 3 un; %\nreceita")
+    assert [e.line for e in errors] == [1, 1]
+    assert [t.type for t in tokens] == ["INGREDIENTE", "ID", "=", "NUM", "ID", ";", "RECEITA"]
+
+
+def test_identificador_com_acento():
+    assert messages("ingrediente açúcar = 300 g;") == [
+        "erro léxico [linha 1]: identificador 'açúcar' tem caracteres não permitidos "
+        "(use letras sem acento, dígitos e _)"
+    ]
+
+
+def test_string_nao_terminada_descarta_o_resto_da_linha():
+    tokens, errors = lex('passo "Assar dura 5 min;\nreceita')
+    assert [str(e) for e in errors] == ["erro léxico [linha 1]: string não terminada"]
+    assert [(t.type, t.lineno) for t in tokens] == [("PASSO", 1), ("RECEITA", 2)]
+
+
+def test_string_nao_atravessa_linhas():
+    assert messages('"primeira\nsegunda"') == [
+        "erro léxico [linha 1]: string não terminada",
+        "erro léxico [linha 2]: string não terminada",
+    ]
+
+
+@pytest.mark.parametrize("lexeme", ["24:00", "12:60", "99:99"])
+def test_hora_invalida(lexeme):
+    assert messages(lexeme) == [f"erro léxico [linha 1]: hora inválida '{lexeme}'"]
+
+
+def test_decimal_sem_parte_inteira_e_erro():
+    assert messages(".5 g") == ["erro léxico [linha 1]: caractere inesperado '.'"]
+
+
+def test_virgula_decimal_nao_forma_um_numero():
+    assert types("1,5 kg") == ["NUM", ",", "NUM", "ID"]
