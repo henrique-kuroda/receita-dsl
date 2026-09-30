@@ -34,13 +34,17 @@ class RecipeParser(Parser):
     tokens = RecipeLexer.tokens
     start = "programa"
 
+    def __init__(self) -> None:
+        self.errors: list[SyntacticError] = []
+
     @_("declaracoes")
     def programa(self, p):
         return Program(tuple(p.declaracoes), line=1)
 
     @_("declaracoes declaracao")
     def declaracoes(self, p):
-        p.declaracoes.append(p.declaracao)
+        if p.declaracao is not None:
+            p.declaracoes.append(p.declaracao)
         return p.declaracoes
 
     @_("")
@@ -50,6 +54,10 @@ class RecipeParser(Parser):
     @_("def_unidade", "def_receita", "comando")
     def declaracao(self, p):
         return p[0]
+
+    @_("error ';'")
+    def declaracao(self, p):
+        return None
 
     @_("UNIDADE ID '=' expr ';'")
     def def_unidade(self, p):
@@ -61,7 +69,8 @@ class RecipeParser(Parser):
 
     @_("itens item_receita")
     def itens(self, p):
-        p.itens.append(p.item_receita)
+        if p.item_receita is not None:
+            p.itens.append(p.item_receita)
         return p.itens
 
     @_("")
@@ -71,6 +80,10 @@ class RecipeParser(Parser):
     @_("ingrediente", "passo")
     def item_receita(self, p):
         return p[0]
+
+    @_("error ';'")
+    def item_receita(self, p):
+        return None
 
     @_("INGREDIENTE ID '=' expr ';'")
     def ingrediente(self, p):
@@ -168,7 +181,7 @@ class RecipeParser(Parser):
             found, line = "o fim do arquivo", self._last_line
         else:
             found, line = describe_token(token), token.lineno
-        raise SyntacticError(f"encontrou {found} quando esperava {expected}", line)
+        self.errors.append(SyntacticError(f"encontrou {found} quando esperava {expected}", line))
 
     def _acceptable_tokens(self) -> list[str]:
         """Tokens que o parser aceitaria agora.
@@ -195,9 +208,11 @@ class RecipeParser(Parser):
                 del stack[-production.len:]
             stack.append(goto[stack[-1]][production.name])
 
-    def parse_tokens(self, tokens: Sequence[Token]) -> Program:
+    def parse_tokens(self, tokens: Sequence[Token]) -> Program | None:
+        """Constrói a AST; após um erro, descarta tokens até o próximo ';' e continua."""
         self._last_line = tokens[-1].lineno if tokens else 1
-        return self.parse(iter(tokens))
+        program = self.parse(iter(tokens))
+        return None if self.errors else program
 
 
 def describe_token(token: Token) -> str:
@@ -254,7 +269,6 @@ def parse(source: str) -> ParseResult:
     tokens, lexical_errors = tokenize(source)
     if lexical_errors:
         return ParseResult(None, list(lexical_errors))
-    try:
-        return ParseResult(RecipeParser().parse_tokens(tokens))
-    except SyntacticError as error:
-        return ParseResult(None, [error])
+    parser = RecipeParser()
+    program = parser.parse_tokens(tokens)
+    return ParseResult(program, list(parser.errors))
