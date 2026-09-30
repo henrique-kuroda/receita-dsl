@@ -2,7 +2,13 @@ from fractions import Fraction
 
 import pytest
 
-from receita.lexer import tokenize
+from receita.lexer import tokenize as lex
+
+
+def tokenize(source: str):
+    tokens, errors = lex(source)
+    assert errors == []
+    return tokens
 
 
 def types(source: str) -> list[str]:
