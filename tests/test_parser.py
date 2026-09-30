@@ -17,6 +17,7 @@ from receita.ast import (
     Step,
     UnitDef,
     format_number,
+    format_tree,
 )
 from receita.parser import parse
 
@@ -290,3 +291,28 @@ def test_erro_lexico_interrompe_antes_do_parser():
     result = parse("unidade p = 1 g @;\nunidade = ;")
     assert result.program is None
     assert [str(e) for e in result.errors] == ["erro léxico [linha 1]: caractere inesperado '@'"]
+
+
+def test_format_tree():
+    source = """receita bolo rende 1 porcao {
+    ingrediente sal = -(farinha * 0.01);
+    passo "Assar" dura 1 h - 20 min usa sal;
+}
+compras bolo para 20 porcoes, bolo;
+cronograma bolo inicio 9:05;"""
+    assert format_tree(parse_ok(source)) == """\
+Programa
+├── Receita bolo rende 1 porção  [linha 1]
+│   ├── Ingrediente sal  [linha 2]
+│   │   └── Negação
+│   │       └── Operação *
+│   │           ├── Referência farinha
+│   │           └── Quantidade 0.01
+│   └── Passo "Assar" usa sal  [linha 3]
+│       └── Operação -
+│           ├── Quantidade 1 h
+│           └── Quantidade 20 min
+├── Compras  [linha 5]
+│   ├── bolo para 20 porções
+│   └── bolo (rendimento base)
+└── Cronograma bolo início 09:05  [linha 6]"""
