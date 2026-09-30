@@ -21,3 +21,7 @@ class ReceitaError(Exception):
 
 class LexicalError(ReceitaError):
     kind = "léxico"
+
+
+class SyntacticError(ReceitaError):
+    kind = "sintático"

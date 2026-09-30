@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 from fractions import Fraction
 from typing import Union
 
@@ -117,3 +118,13 @@ Declaration = Union[UnitDef, Recipe, ScaleCommand, ShoppingCommand, ScheduleComm
 @dataclass(frozen=True)
 class Program(Node):
     declarations: tuple[Declaration, ...]
+
+
+def format_number(value: Fraction) -> str:
+    """Representação exata: decimal quando finita (0.5), fração caso contrário (1/3)."""
+    if value.denominator == 1:
+        return str(value.numerator)
+    decimal = Decimal(value.numerator) / Decimal(value.denominator)
+    if Fraction(decimal) == value:
+        return format(decimal, "f")
+    return f"{value.numerator}/{value.denominator}"
