@@ -201,3 +201,13 @@ def _label(node: Node) -> str:
 
 def _servings(value: Fraction) -> str:
     return f"{format_number(value)} {'porção' if value == 1 else 'porções'}"
+
+
+class NodeVisitor:
+    """Despacha `visit(node)` para `visit_<NomeDoNó>`."""
+
+    def visit(self, node: Node):
+        method = getattr(self, f"visit_{type(node).__name__}", None)
+        if method is None:
+            raise NotImplementedError(f"{type(self).__name__} não trata {type(node).__name__}")
+        return method(node)
