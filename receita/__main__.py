@@ -10,7 +10,10 @@ from typing import Sequence
 
 from sly.lex import Token
 
+from receita.ast import format_tree
+from receita.errors import ReceitaError
 from receita.lexer import tokenize
+from receita.parser import RecipeParser
 
 EXIT_OK = 0
 EXIT_SYNTAX_ERROR = 1
@@ -24,6 +27,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("arquivo", help="programa-fonte (.rec)")
     parser.add_argument("--tokens", action="store_true", help="lista os tokens reconhecidos")
+    parser.add_argument("--ast", action="store_true", help="mostra a árvore sintática")
     return parser
 
 
@@ -61,12 +65,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"erro: não foi possível ler '{args.arquivo}': {exc}", file=sys.stderr)
         return EXIT_SYNTAX_ERROR
 
-    tokens, errors = tokenize(source)
+    tokens, lexical_errors = tokenize(source)
     if args.tokens:
         print(format_tokens(tokens, source))
+    if lexical_errors:
+        return _report(lexical_errors, EXIT_SYNTAX_ERROR)
+
+    parser = RecipeParser()
+    program = parser.parse_tokens(tokens)
+    if parser.errors:
+        return _report(parser.errors, EXIT_SYNTAX_ERROR)
+    if args.ast:
+        print(format_tree(program))
+    return EXIT_OK
+
+
+def _report(errors: Sequence[ReceitaError], exit_code: int) -> int:
     for error in errors:
         print(error, file=sys.stderr)
-    return EXIT_SYNTAX_ERROR if errors else EXIT_OK
+    return exit_code
 
 
 def _use_utf8_output() -> None:
