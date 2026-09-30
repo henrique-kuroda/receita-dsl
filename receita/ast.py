@@ -171,17 +171,17 @@ def _label(node: Node) -> str:
         case UnitDef(name=name):
             text = f"Unidade {name}"
         case Recipe(name=name, servings=servings):
-            text = f"Receita {name} rende {_servings(servings)}"
+            text = f"Receita {name} rende {format_servings(servings)}"
         case Ingredient(name=name):
             text = f"Ingrediente {name}"
         case Step(description=description, uses=uses):
             text = f'Passo "{description}"' + (f" usa {', '.join(uses)}" if uses else "")
         case ScaleCommand(recipe=recipe, servings=servings):
-            text = f"Escalar {recipe} para {_servings(servings)}"
+            text = f"Escalar {recipe} para {format_servings(servings)}"
         case ShoppingCommand():
             text = "Compras"
         case ShoppingTarget(recipe=recipe, servings=servings):
-            return recipe + (f" para {_servings(servings)}" if servings is not None else " (rendimento base)")
+            return recipe + (f" para {format_servings(servings)}" if servings is not None else " (rendimento base)")
         case ScheduleCommand(recipes=recipes, start=start):
             text = f"Cronograma {', '.join(recipes)}"
             if start is not None:
@@ -199,7 +199,8 @@ def _label(node: Node) -> str:
     return f"{text}  [linha {node.line}]"
 
 
-def _servings(value: Fraction) -> str:
+def format_servings(value: Fraction) -> str:
+    """Rendimento por extenso: 8 porções, 1 porção."""
     return f"{format_number(value)} {'porção' if value == 1 else 'porções'}"
 
 
