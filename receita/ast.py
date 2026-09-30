@@ -128,3 +128,76 @@ def format_number(value: Fraction) -> str:
     if Fraction(decimal) == value:
         return format(decimal, "f")
     return f"{value.numerator}/{value.denominator}"
+
+
+def format_tree(node: Node) -> str:
+    """AST em árvore indentada, com a linha de cada declaração."""
+    lines = [_label(node)]
+    _append_children(node, "", lines)
+    return "\n".join(lines)
+
+
+def _append_children(node: Node, prefix: str, lines: list[str]) -> None:
+    children = _children(node)
+    for index, child in enumerate(children):
+        last = index == len(children) - 1
+        lines.append(f"{prefix}{'└── ' if last else '├── '}{_label(child)}")
+        _append_children(child, prefix + ("    " if last else "│   "), lines)
+
+
+def _children(node: Node) -> tuple[Node, ...]:
+    match node:
+        case Program(declarations=declarations):
+            return declarations
+        case Recipe(items=items):
+            return items
+        case ShoppingCommand(targets=targets):
+            return targets
+        case UnitDef(expr=expr) | Ingredient(expr=expr):
+            return (expr,)
+        case Step(duration=duration):
+            return (duration,)
+        case BinaryOp(left=left, right=right):
+            return (left, right)
+        case Negation(operand=operand):
+            return (operand,)
+    return ()
+
+
+def _label(node: Node) -> str:
+    match node:
+        case Program():
+            return "Programa"
+        case UnitDef(name=name):
+            text = f"Unidade {name}"
+        case Recipe(name=name, servings=servings):
+            text = f"Receita {name} rende {_servings(servings)}"
+        case Ingredient(name=name):
+            text = f"Ingrediente {name}"
+        case Step(description=description, uses=uses):
+            text = f'Passo "{description}"' + (f" usa {', '.join(uses)}" if uses else "")
+        case ScaleCommand(recipe=recipe, servings=servings):
+            text = f"Escalar {recipe} para {_servings(servings)}"
+        case ShoppingCommand():
+            text = "Compras"
+        case ShoppingTarget(recipe=recipe, servings=servings):
+            return recipe + (f" para {_servings(servings)}" if servings is not None else " (rendimento base)")
+        case ScheduleCommand(recipes=recipes, start=start):
+            text = f"Cronograma {', '.join(recipes)}"
+            if start is not None:
+                text += f" início {start[0]:02d}:{start[1]:02d}"
+        case Quantity(value=value, unit=unit):
+            return f"Quantidade {format_number(value)}" + (f" {unit}" if unit else "")
+        case Reference(name=name):
+            return f"Referência {name}"
+        case BinaryOp(op=op):
+            return f"Operação {op}"
+        case Negation():
+            return "Negação"
+        case _:
+            return type(node).__name__
+    return f"{text}  [linha {node.line}]"
+
+
+def _servings(value: Fraction) -> str:
+    return f"{format_number(value)} {'porção' if value == 1 else 'porções'}"
