@@ -40,3 +40,28 @@ def test_erro_lexico_sai_com_um_e_vai_para_stderr(write_program, capsys):
 def test_arquivo_inexistente(tmp_path, capsys):
     assert main([str(tmp_path / "nao_existe.rec")]) == EXIT_SYNTAX_ERROR
     assert "não foi possível ler" in capsys.readouterr().err
+
+
+def test_flag_ast_mostra_arvore(write_program, capsys):
+    assert main([write_program("escalar bolo para 2 porcoes;"), "--ast"]) == EXIT_OK
+    assert capsys.readouterr().out.splitlines() == [
+        "Programa",
+        "└── Escalar bolo para 2 porções  [linha 1]",
+    ]
+
+
+def test_erro_sintatico_sai_com_um(write_program, capsys):
+    assert main([write_program("unidade p = 1 g\nescalar"), "--ast"]) == EXIT_SYNTAX_ERROR
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err.startswith("erro sintático [linha 2]: encontrou palavra reservada 'escalar'")
+
+
+def test_varios_erros_sintaticos_sao_todos_reportados(write_program, capsys):
+    main([write_program("unidade p = ;\nunidade q = 1 g;\nescalar x para;\n")])
+    assert len(capsys.readouterr().err.splitlines()) == 2
+
+
+def test_tokens_sao_listados_mesmo_com_erro_sintatico(write_program, capsys):
+    assert main([write_program("receita ;"), "--tokens"]) == EXIT_SYNTAX_ERROR
+    assert "RECEITA" in capsys.readouterr().out
