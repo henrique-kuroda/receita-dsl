@@ -176,3 +176,117 @@ cronograma bolo_cenoura, cobertura inicio 14:00;
 )
 def test_format_number_e_exato(value, text):
     assert format_number(value) == text
+
+
+def errors(source: str) -> list[str]:
+    result = parse(source)
+    assert result.program is None
+    return [str(e) for e in result.errors]
+
+
+@pytest.mark.parametrize(
+    ("source", "message"),
+    [
+        (
+            "unidade pitada = ;",
+            "encontrou símbolo ';' quando esperava identificador, número, '(' ou '-'",
+        ),
+        (
+            "receita bolo rende porcoes { }",
+            "encontrou palavra reservada 'porcoes' quando esperava número",
+        ),
+        (
+            "receita bolo rende 8 porcoes ingrediente a = 1 g; }",
+            "encontrou palavra reservada 'ingrediente' quando esperava '{'",
+        ),
+        (
+            'receita bolo rende 8 porcoes { passo "Assar" 40 min; }',
+            "encontrou número '40' quando esperava 'dura'",
+        ),
+        (
+            'receita bolo rende 8 porcoes { passo "Assar" dura 40 min usa; }',
+            "encontrou símbolo ';' quando esperava identificador",
+        ),
+        (
+            "escalar bolo para 20;",
+            "encontrou símbolo ';' quando esperava 'porcoes'",
+        ),
+        (
+            "compras bolo, ;",
+            "encontrou símbolo ';' quando esperava identificador",
+        ),
+        (
+            "cronograma bolo inicio 14;",
+            "encontrou número '14' quando esperava hora (HH:MM)",
+        ),
+        (
+            "bolo para 2 porcoes;",
+            "encontrou identificador 'bolo' quando esperava 'compras', 'cronograma', "
+            "'escalar', 'receita', 'unidade' ou fim do arquivo",
+        ),
+        (
+            "unidade p = 1 g * * 2;",
+            "encontrou símbolo '*' quando esperava identificador, número, '(' ou '-'",
+        ),
+        (
+            'unidade p = "meio grama";',
+            "encontrou texto \"meio grama\" quando esperava identificador, número, '(' ou '-'",
+        ),
+    ],
+)
+def test_erro_sintatico_informa_encontrado_e_esperado(source, message):
+    assert errors(source) == [f"erro sintático [linha 1]: {message}"]
+
+
+def test_ponto_e_virgula_faltando_aponta_a_linha_seguinte():
+    source = "receita bolo rende 8 porcoes {\n    ingrediente a = 2 g\n    ingrediente b = 1 g;\n}"
+    assert errors(source) == [
+        "erro sintático [linha 3]: encontrou palavra reservada 'ingrediente' "
+        "quando esperava '+', '-', '*', '/' ou ';'"
+    ]
+
+
+def test_fim_de_arquivo_inesperado_usa_a_ultima_linha():
+    assert errors("receita r rende 2 porcoes {\n  ingrediente a = 1 g;\n\n# fim") == [
+        "erro sintático [linha 2]: encontrou o fim do arquivo "
+        "quando esperava '}', 'ingrediente' ou 'passo'"
+    ]
+
+
+def test_fim_de_arquivo_em_programa_de_uma_linha():
+    assert errors("unidade p = 1 g") == [
+        "erro sintático [linha 1]: encontrou o fim do arquivo quando esperava '+', '-', '*', '/' ou ';'"
+    ]
+
+
+def test_chave_sobrando():
+    assert errors("receita r rende 2 porcoes { } }") == [
+        "erro sintático [linha 1]: encontrou símbolo '}' quando esperava 'compras', 'cronograma', "
+        "'escalar', 'receita', 'unidade' ou fim do arquivo"
+    ]
+
+
+def test_recupera_e_reporta_erros_em_declaracoes_diferentes():
+    source = "unidade p = ;\nunidade q = 1 g;\nescalar bolo para porcoes;\ncompras bolo;"
+    assert [e.split("]")[0] for e in errors(source)] == [
+        "erro sintático [linha 1", "erro sintático [linha 3",
+    ]
+
+
+def test_recupera_dentro_da_receita():
+    source = """receita bolo rende 8 porcoes {
+    ingrediente a = ;
+    ingrediente b = 2 g;
+    passo "Assar" dura min 40;
+}
+escalar bolo para 2 porcoes;"""
+    assert errors(source) == [
+        "erro sintático [linha 2]: encontrou símbolo ';' quando esperava identificador, número, '(' ou '-'",
+        "erro sintático [linha 4]: encontrou número '40' quando esperava '+', '-', '*', '/', ';' ou 'usa'",
+    ]
+
+
+def test_erro_lexico_interrompe_antes_do_parser():
+    result = parse("unidade p = 1 g @;\nunidade = ;")
+    assert result.program is None
+    assert [str(e) for e in result.errors] == ["erro léxico [linha 1]: caractere inesperado '@'"]
