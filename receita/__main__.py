@@ -14,6 +14,7 @@ from receita.ast import format_tree
 from receita.errors import ReceitaError
 from receita.lexer import tokenize
 from receita.parser import RecipeParser
+from receita.semantic import analyze
 
 EXIT_OK = 0
 EXIT_SYNTAX_ERROR = 1
@@ -28,6 +29,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("arquivo", help="programa-fonte (.rec)")
     parser.add_argument("--tokens", action="store_true", help="lista os tokens reconhecidos")
     parser.add_argument("--ast", action="store_true", help="mostra a árvore sintática")
+    parser.add_argument(
+        "--simbolos", action="store_true", help="mostra a tabela de símbolos após a análise semântica"
+    )
     return parser
 
 
@@ -77,12 +81,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _report(parser.errors, EXIT_SYNTAX_ERROR)
     if args.ast:
         print(format_tree(program))
-    return EXIT_OK
+
+    semantic = analyze(program)
+    if args.simbolos:
+        print(semantic.symbols.format())
+    exit_code = EXIT_SEMANTIC_ERROR if semantic.errors else EXIT_OK
+    return _report([*semantic.errors, *semantic.warnings], exit_code)
 
 
-def _report(errors: Sequence[ReceitaError], exit_code: int) -> int:
-    for error in errors:
-        print(error, file=sys.stderr)
+def _report(diagnostics: Sequence[ReceitaError], exit_code: int) -> int:
+    for diagnostic in diagnostics:
+        print(diagnostic, file=sys.stderr)
     return exit_code
 
 
