@@ -99,10 +99,21 @@ class UnitTable:
         return unit
 
     def register(self, unit: Unit) -> None:
-        """Adiciona uma unidade; rejeita nomes repetidos."""
+        """Adiciona uma unidade; rejeita nomes repetidos, dimensão escalar e fator não positivo."""
         if unit.name in self._units:
             raise UnitError(f"unidade '{unit.name}' já declarada")
+        if unit.dimension is Dimension.ESCALAR:
+            raise UnitError(f"unidade '{unit.name}' precisa ter dimensão não escalar")
+        if unit.factor <= 0:
+            raise UnitError(f"unidade '{unit.name}' precisa ter valor positivo")
         self._units[unit.name] = unit
+
+    def define(self, name: str, value: Fraction, unit_name: str) -> Unit:
+        """Declara `name` como `value unit_name` (ex.: pitada = 0.5 g) e a registra."""
+        base = self.lookup(unit_name)
+        unit = Unit(name, base.dimension, base.to_base(Fraction(value)))
+        self.register(unit)
+        return unit
 
     def convert(self, value: Fraction, source: str, target: str) -> Fraction:
         """Converte `value` de `source` para `target`; exige a mesma dimensão."""
