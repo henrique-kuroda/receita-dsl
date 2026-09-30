@@ -2,7 +2,7 @@ from fractions import Fraction
 
 import pytest
 
-from receita.units import NATIVE_UNITS, Dimension, UnitError, UnitTable
+from receita.units import NATIVE_UNITS, Dimension, Unit, UnitError, UnitTable
 
 
 @pytest.fixture
@@ -112,3 +112,50 @@ def test_unidade_inexistente_e_erro(table):
     assert table.get("libra") is None
     with pytest.raises(UnitError, match="unidade 'libra' inexistente"):
         table.convert(Fraction(1), "libra", "g")
+
+
+def test_define_unidade_derivada_herda_dimensao(table):
+    pitada = table.define("pitada", Fraction(1, 2), "g")
+    assert pitada.dimension is Dimension.MASSA
+    assert table.convert(Fraction(4), "pitada", "g") == 2
+    assert table.convert(Fraction(1), "pitada", "mg") == 500
+
+
+def test_define_unidade_a_partir_de_outra_derivada(table):
+    table.define("xicara_farinha", Fraction(120), "g")
+    table.define("meia_xicara_farinha", Fraction(1, 2), "xicara_farinha")
+    assert table.to_base(Fraction(1), "meia_xicara_farinha") == 60
+
+
+def test_define_unidade_derivada_nao_converte_entre_dimensoes(table):
+    table.define("pitada", Fraction(1, 2), "g")
+    with pytest.raises(UnitError, match="não é possível converter"):
+        table.convert(Fraction(1), "pitada", "ml")
+
+
+def test_redeclarar_unidade_e_erro(table):
+    table.define("pitada", Fraction(1, 2), "g")
+    with pytest.raises(UnitError, match="unidade 'pitada' já declarada"):
+        table.define("pitada", Fraction(1), "g")
+
+
+def test_redeclarar_unidade_nativa_e_erro(table):
+    with pytest.raises(UnitError, match="unidade 'kg' já declarada"):
+        table.define("kg", Fraction(1000), "g")
+
+
+def test_define_com_base_inexistente_e_erro(table):
+    with pytest.raises(UnitError, match="unidade 'onca' inexistente"):
+        table.define("pitada", Fraction(1), "onca")
+
+
+@pytest.mark.parametrize("value", [Fraction(0), Fraction(-1, 2)])
+def test_unidade_com_valor_nao_positivo_e_erro(table, value):
+    with pytest.raises(UnitError, match="precisa ter valor positivo"):
+        table.define("nada", value, "g")
+    assert "nada" not in table
+
+
+def test_unidade_escalar_e_erro(table):
+    with pytest.raises(UnitError, match="dimensão não escalar"):
+        table.register(Unit("vezes", Dimension.ESCALAR, Fraction(1)))
