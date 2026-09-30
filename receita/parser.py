@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Sequence
+from typing import Iterable, Sequence
 
 from sly import Parser
 from sly.lex import Token
@@ -163,9 +163,37 @@ class RecipeParser(Parser):
         return Negation(p.fator, line=p.lineno)
 
     def error(self, token: Token | None) -> None:
+        expected = describe_expected(self._acceptable_tokens())
         if token is None:
-            raise SyntacticError("fim de arquivo inesperado", self._last_line)
-        raise SyntacticError(f"token inesperado: {describe_token(token)}", token.lineno)
+            found, line = "o fim do arquivo", self._last_line
+        else:
+            found, line = describe_token(token), token.lineno
+        raise SyntacticError(f"encontrou {found} quando esperava {expected}", line)
+
+    def _acceptable_tokens(self) -> list[str]:
+        """Tokens que o parser aceitaria agora.
+
+        Na tabela LALR os lookaheads de estados com o mesmo núcleo são fundidos, então as
+        ações do estado atual podem incluir tokens que só valem em outro contexto. Para cada
+        candidato, as reduções são simuladas sobre uma cópia da pilha até haver um shift.
+        """
+        candidates = [t for t in self._grammar.Terminals if t != "error"] + ["$end"]
+        return [t for t in candidates if self._would_shift(t)]
+
+    def _would_shift(self, token_type: str) -> bool:
+        actions = self._lrtable.lr_action
+        goto = self._lrtable.lr_goto
+        stack = list(self.statestack)
+        while True:
+            action = actions[stack[-1]].get(token_type)
+            if action is None:
+                return False
+            if action >= 0:
+                return True
+            production = self._grammar.Productions[-action]
+            if production.len:
+                del stack[-production.len:]
+            stack.append(goto[stack[-1]][production.name])
 
     def parse_tokens(self, tokens: Sequence[Token]) -> Program:
         self._last_line = tokens[-1].lineno if tokens else 1
@@ -186,6 +214,33 @@ def describe_token(token: Token) -> str:
     if token.type.isupper():
         return f"palavra reservada '{token.value}'"
     return f"símbolo '{token.value}'"
+
+
+_EXPECTED_ORDER = [
+    "ID", "NUM", "STRING", "HORA", "(", "+", "-", "*", "/", ")", "=", ",", ";", "{", "}",
+]
+_EXPECTED_NAMES = {
+    "ID": "identificador",
+    "NUM": "número",
+    "STRING": "texto entre aspas",
+    "HORA": "hora (HH:MM)",
+    "$end": "fim do arquivo",
+}
+
+
+def _expected_sort_key(token_type: str) -> tuple[int, bool, str]:
+    position = _EXPECTED_ORDER.index(token_type) if token_type in _EXPECTED_ORDER else len(_EXPECTED_ORDER)
+    return position, token_type == "$end", token_type
+
+
+def describe_expected(token_types: Iterable[str]) -> str:
+    """Lista legível dos tokens aceitos num estado do parser: "';', '+' ou '-'"."""
+    types = [t for t in token_types if t != "error"]
+    types.sort(key=_expected_sort_key)
+    names = [_EXPECTED_NAMES.get(t) or f"'{t.lower()}'" for t in types]
+    if len(names) == 1:
+        return names[0]
+    return ", ".join(names[:-1]) + " ou " + names[-1]
 
 
 @dataclass
