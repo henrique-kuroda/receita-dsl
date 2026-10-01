@@ -136,5 +136,6 @@ não está declarando quais ingredientes cada passo consome. O aviso não bloque
 
 No programa de exemplo do brief, `acucar` é `300 g` em `bolo_cenoura` e `1 xicara` em
 `cobertura`. Por isso `compras bolo_cenoura para 20 porcoes, cobertura para 20 porcoes;` é
-rejeitado com o erro 8, exatamente o caso que o próprio brief descreve. Os exemplos em
-`exemplos/` usam `acucar` em gramas nas duas receitas.
+rejeitado com o erro 8, exatamente o caso que o próprio brief descreve. Esse caso está em
+`exemplos/erros_tipos.rec`. Em `exemplos/festa_completa.rec`, a cobertura mede o açúcar com uma
+unidade declarada de massa (`unidade xicara_acucar = 180 g;`), e a lista de compras soma os dois.

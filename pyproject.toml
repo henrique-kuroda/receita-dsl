@@ -1,6 +1,6 @@
 [project]
 name = "receita-dsl"
-version = "0.1.0"
+version = "1.0.0"
 description = "DSL de receitas escaláveis com tipos dimensionais"
 requires-python = ">=3.10"
 dependencies = ["sly==0.5"]
