@@ -1,0 +1,7 @@
+$ python -m receita exemplos/erros_sintaticos.rec
+erro sintático [linha 4]: encontrou símbolo ';' quando esperava identificador, número, '(' ou '-'
+erro sintático [linha 8]: encontrou símbolo ';' quando esperava identificador, número, '(' ou '-'
+erro sintático [linha 9]: encontrou número '40' quando esperava 'dura'
+erro sintático [linha 13]: encontrou símbolo ';' quando esperava 'porcoes'
+erro sintático [linha 14]: encontrou número '14' quando esperava hora (HH:MM)
+(código de saída: 1)

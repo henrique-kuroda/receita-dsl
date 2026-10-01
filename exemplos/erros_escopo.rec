@@ -1,0 +1,31 @@
+# Erros de escopo e de declaração. Todos são relatados juntos, em ordem de linha.
+#   python -m receita exemplos/erros_escopo.rec     (código de saída 2)
+
+unidade pitada = 0.5 g;
+unidade pitada = 1 g;                       # unidade redeclarada
+unidade kg     = 1000 g;                    # kg já é nativa
+
+receita bolo rende 8 porcoes {
+    ingrediente farinha  = 2 xicaras;               # unidade inexistente
+    ingrediente sal      = fermento * 0.1;          # usado antes da declaração
+    ingrediente fermento = 1 colher_cha;
+    ingrediente ovos     = 3 un;
+    ingrediente ovos     = 4 un;                    # ingrediente redeclarado
+
+    passo "Misturar" dura 10 min usa farinha, fermento, manteiga;   # 'manteiga' não existe
+    passo "Assar" dura 40 min usa ovos;
+}
+
+receita cobertura rende 0 porcoes {                 # rendimento zero
+    ingrediente creme = farinha / 4;                # 'farinha' é do bolo
+}
+
+receita bolo rende 4 porcoes { }                    # receita redeclarada
+
+escalar torta para 10 porcoes;                      # receita inexistente
+compras bolo para 0 porcoes;                        # zero porções
+cronograma bolo, recheio;                           # 'recheio' vem depois
+
+receita recheio rende 4 porcoes {
+    ingrediente leite = 1 l;
+}

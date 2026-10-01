@@ -1,0 +1,10 @@
+# Erros léxicos. O lexer relata todos e o parser nem chega a rodar.
+#   python -m receita exemplos/erros_lexicos.rec    (código de saída 1)
+
+receita bolo rende 8 porcoes {
+    ingrediente açúcar = 300 g;
+    ingrediente sal = 2 g @;
+    passo "Assar dura 40 min;
+}
+
+cronograma bolo inicio 25:00;

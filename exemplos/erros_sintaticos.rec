@@ -1,0 +1,14 @@
+# Erros sintáticos. Depois de cada erro o parser descarta tokens até o próximo ';' e continua.
+#   python -m receita exemplos/erros_sintaticos.rec (código de saída 1)
+
+unidade pitada = ;                          # falta a expressão
+
+receita bolo rende 8 porcoes {
+    ingrediente farinha = 2 xicara;
+    ingrediente acucar  = 300 g * ;         # falta o operando
+    passo "Assar" 40 min;                   # falta 'dura'
+    passo "Esfriar" dura 1 h;
+}
+
+escalar bolo para 20;                       # falta 'porcoes'
+cronograma bolo inicio 14;                  # hora precisa ser HH:MM

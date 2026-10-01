@@ -1,0 +1,12 @@
+$ python -m receita exemplos/erros_tipos.rec
+erro semântico [linha 5]: unidade 'vezes' precisa ter dimensão não escalar
+erro semântico [linha 10]: não é possível somar volume (ml) com massa (g)
+erro semântico [linha 11]: não é possível multiplicar massa (g) por massa (g) (produto entre quantidades não é suportado)
+erro semântico [linha 12]: não é possível dividir volume (ml) por massa (g)
+erro semântico [linha 13]: ingrediente 'espera' precisa ser massa, volume ou contagem, não tempo (min)
+erro semântico [linha 14]: divisão por zero
+erro semântico [linha 15]: ingrediente 'sobra' precisa ter quantidade positiva
+erro semântico [linha 17]: duração do passo "Bater" precisa ser tempo, não massa (g)
+erro semântico [linha 18]: não é possível subtrair contagem (un) de tempo (min)
+erro semântico [linha 28]: ingrediente 'acucar' tem dimensões diferentes nas receitas 'bolo' (massa (g)) e 'cobertura' (volume (ml)); sem densidade não há conversão
+(código de saída: 2)

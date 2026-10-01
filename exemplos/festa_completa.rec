@@ -1,0 +1,48 @@
+# Festa completa: unidades declaradas, três receitas e as três operações.
+#   python -m receita exemplos/festa_completa.rec
+
+# Unidades caseiras. Como não há conversão entre massa e volume, "xícara de açúcar"
+# é declarada como massa: o tipo vem da expressão à direita.
+unidade pitada        = 0.5 g;
+unidade xicara_acucar = 180 g;
+
+receita bolo_cenoura rende 8 porcoes {
+    ingrediente farinha = 2 xicara;
+    ingrediente acucar  = 300 g;
+    ingrediente ovos    = 0.25 duzia;
+    ingrediente cenoura = 0.5 kg;
+    ingrediente oleo    = 200 ml;
+    ingrediente sal     = 2 pitada;
+
+    passo "Bater cenoura, ovos e óleo no liquidificador" dura 5 min usa cenoura, ovos, oleo;
+    passo "Misturar com farinha, açúcar e sal" dura 10 min usa farinha, acucar, sal;
+    passo "Assar a 180 graus" dura 1 h - 20 min;
+}
+
+receita cobertura rende 8 porcoes {
+    ingrediente acucar    = 1 xicara_acucar;
+    ingrediente chocolate = 4 colher_sopa;
+    ingrediente manteiga  = 1 colher_sopa;
+    ingrediente leite     = 0.25 l;
+
+    passo "Levar ao fogo mexendo até engrossar" dura 8 min usa acucar, chocolate, manteiga, leite;
+}
+
+receita brigadeiro rende 30 porcoes {
+    ingrediente leite_condensado = 395 g;
+    ingrediente chocolate        = 3 colher_sopa;
+    ingrediente manteiga         = 1 colher_sopa;
+    ingrediente forminhas        = 30 un;
+
+    passo "Cozinhar mexendo até desgrudar da panela" dura 15 min usa leite_condensado, chocolate, manteiga;
+    passo "Esfriar" dura 1 h;
+    passo "Enrolar e colocar nas forminhas" dura 30 min usa forminhas;
+}
+
+escalar bolo_cenoura para 20 porcoes;
+escalar brigadeiro para 45 porcoes;
+
+# "acucar", "chocolate" e "manteiga" aparecem em mais de uma receita e são somados.
+compras bolo_cenoura para 20 porcoes, cobertura para 20 porcoes, brigadeiro para 45 porcoes;
+
+cronograma bolo_cenoura, cobertura, brigadeiro inicio 14:00;

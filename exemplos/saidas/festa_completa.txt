@@ -1,0 +1,38 @@
+$ python -m receita exemplos/festa_completa.rec
+Receita bolo_cenoura para 20 porções (rende 8, fator 2.5)
+  farinha  1.2 l
+  acucar   750 g
+  ovos     8 un (7.5)
+  cenoura  1.25 kg
+  oleo     500 ml
+  sal      2.5 g
+
+Receita brigadeiro para 45 porções (rende 30, fator 1.5)
+  leite_condensado  592.5 g
+  chocolate         67.5 ml
+  manteiga          22.5 ml
+  forminhas         45 un
+
+Lista de compras: bolo_cenoura (20 porções), cobertura (20 porções), brigadeiro (45 porções)
+  acucar            1.2 kg
+  cenoura           1.25 kg
+  chocolate         217.5 ml
+  farinha           1.2 l
+  forminhas         45 un
+  leite             625 ml
+  leite_condensado  592.5 g
+  manteiga          60 ml
+  oleo              500 ml
+  ovos              8 un (7.5)
+  sal               2.5 g
+
+Cronograma: bolo_cenoura, cobertura, brigadeiro (início 14:00)
+  14:00 - 14:05  bolo_cenoura  Bater cenoura, ovos e óleo no liquidificador
+  14:05 - 14:15  bolo_cenoura  Misturar com farinha, açúcar e sal
+  14:15 - 14:55  bolo_cenoura  Assar a 180 graus
+  14:55 - 15:03  cobertura     Levar ao fogo mexendo até engrossar
+  15:03 - 15:18  brigadeiro    Cozinhar mexendo até desgrudar da panela
+  15:18 - 16:18  brigadeiro    Esfriar
+  16:18 - 16:48  brigadeiro    Enrolar e colocar nas forminhas
+  Tempo total: 2 h 48 min
+(código de saída: 0)

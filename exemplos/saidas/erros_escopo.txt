@@ -1,0 +1,15 @@
+$ python -m receita exemplos/erros_escopo.rec
+erro semântico [linha 5]: unidade 'pitada' já declarada na linha 4
+erro semântico [linha 6]: 'kg' já existe como unidade nativa
+erro semântico [linha 9]: unidade 'xicaras' inexistente
+erro semântico [linha 10]: ingrediente 'fermento' usado antes da declaração (linha 11)
+erro semântico [linha 13]: ingrediente 'ovos' já declarado na receita 'bolo' (linha 12)
+erro semântico [linha 15]: passo "Misturar": ingrediente 'manteiga' não declarado na receita 'bolo'
+erro semântico [linha 19]: receita 'cobertura' precisa render mais que zero porções
+erro semântico [linha 20]: ingrediente 'farinha' não declarado na receita 'cobertura' (pertence à receita 'bolo')
+erro semântico [linha 23]: receita 'bolo' já declarada na linha 8
+erro semântico [linha 25]: receita 'torta' inexistente
+erro semântico [linha 26]: número de porções precisa ser maior que zero
+erro semântico [linha 27]: receita 'recheio' usada antes da declaração (linha 29)
+aviso [linha 10]: ingrediente 'sal' não é usado em nenhum passo da receita 'bolo'
+(código de saída: 2)

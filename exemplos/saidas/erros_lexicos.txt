@@ -1,0 +1,6 @@
+$ python -m receita exemplos/erros_lexicos.rec
+erro léxico [linha 5]: identificador 'açúcar' tem caracteres não permitidos (use letras sem acento, dígitos e _)
+erro léxico [linha 6]: caractere inesperado '@'
+erro léxico [linha 7]: string não terminada
+erro léxico [linha 10]: hora inválida '25:00'
+(código de saída: 1)

@@ -1,0 +1,18 @@
+# Exemplo básico: uma receita, escalonamento e cronograma com horários relativos.
+#   python -m receita exemplos/bolo.rec
+
+receita bolo_cenoura rende 8 porcoes {
+    ingrediente farinha  = 2 xicara;
+    ingrediente acucar   = 300 g;
+    ingrediente ovos     = 3 un;
+    ingrediente cenoura  = 0.5 kg;
+    ingrediente oleo     = 200 ml;
+    ingrediente fermento = 1 colher_sopa;
+
+    passo "Bater cenoura, ovos e óleo no liquidificador" dura 5 min usa cenoura, ovos, oleo;
+    passo "Misturar com farinha, açúcar e fermento" dura 10 min usa farinha, acucar, fermento;
+    passo "Assar a 180 graus" dura 1 h - 20 min;
+}
+
+escalar bolo_cenoura para 12 porcoes;
+cronograma bolo_cenoura;

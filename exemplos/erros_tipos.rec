@@ -1,0 +1,28 @@
+# Erros de tipo dimensional. Todos são encontrados antes da execução e nenhum comando roda.
+#   python -m receita exemplos/erros_tipos.rec      (código de saída 2)
+
+unidade pitada = 0.5 g;
+unidade vezes  = 3;                         # unidade precisa ter dimensão
+
+receita bolo rende 8 porcoes {
+    ingrediente farinha = 2 xicara;
+    ingrediente acucar  = 300 g;
+    ingrediente mistura = farinha + acucar;     # volume + massa
+    ingrediente dobro   = acucar * 2 g;         # produto de duas quantidades
+    ingrediente razao   = farinha / 2 g;        # volume / massa
+    ingrediente espera  = 10 min;               # ingrediente com dimensão tempo
+    ingrediente nada    = acucar / 0;           # divisão por zero
+    ingrediente sobra   = 1 g - 2 pitada;       # quantidade negativa
+
+    passo "Bater" dura 200 g;                   # duração precisa ser tempo
+    passo "Assar" dura 1 h - 3 un;              # tempo - contagem
+}
+
+# O exemplo do enunciado: "acucar" é massa no bolo e volume na cobertura.
+# Cada receita isolada é válida; somar as duas na lista de compras não é.
+receita cobertura rende 8 porcoes {
+    ingrediente acucar    = 1 xicara;
+    ingrediente chocolate = 4 colher_sopa;
+}
+
+compras bolo, cobertura;
