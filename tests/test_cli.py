@@ -102,3 +102,36 @@ def test_aviso_nao_bloqueia(write_program, capsys):
     assert capsys.readouterr().err.strip() == (
         "aviso [linha 2]: ingrediente 'a' não é usado em nenhum passo da receita 'r'"
     )
+
+
+EXECUTABLE = """\
+receita bolo rende 8 porcoes {
+    ingrediente ovos = 3 un;
+    passo "Assar" dura 40 min usa ovos;
+}
+escalar bolo para 4 porcoes;
+cronograma bolo inicio 9:00;
+"""
+
+
+def test_executa_comandos(write_program, capsys):
+    assert main([write_program(EXECUTABLE)]) == EXIT_OK
+    assert capsys.readouterr().out == (
+        "Receita bolo para 4 porções (rende 8, fator 0.5)\n"
+        "  ovos  2 un (1.5)\n"
+        "\n"
+        "Cronograma: bolo (início 09:00)\n"
+        "  09:00 - 09:40  bolo  Assar\n"
+        "  Tempo total: 40 min\n"
+    )
+
+
+@pytest.mark.parametrize("flag", ["--tokens", "--ast", "--simbolos"])
+def test_flags_de_inspecao_nao_executam(write_program, capsys, flag):
+    assert main([write_program(EXECUTABLE), flag]) == EXIT_OK
+    assert "Receita bolo para" not in capsys.readouterr().out
+
+
+def test_erro_semantico_impede_execucao(write_program, capsys):
+    assert main([write_program(EXECUTABLE + "escalar torta para 2 porcoes;")]) == EXIT_SEMANTIC_ERROR
+    assert capsys.readouterr().out == ""

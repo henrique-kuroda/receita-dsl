@@ -12,6 +12,7 @@ from sly.lex import Token
 
 from receita.ast import format_tree
 from receita.errors import ReceitaError
+from receita.interpreter import format_result, interpret
 from receita.lexer import tokenize
 from receita.parser import RecipeParser
 from receita.semantic import analyze
@@ -25,6 +26,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python -m receita",
         description="Interpretador da linguagem Receita.",
+        epilog="Com uma flag de inspeção, o programa é analisado mas os comandos não são executados.",
     )
     parser.add_argument("arquivo", help="programa-fonte (.rec)")
     parser.add_argument("--tokens", action="store_true", help="lista os tokens reconhecidos")
@@ -73,26 +75,34 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.tokens:
         print(format_tokens(tokens, source))
     if lexical_errors:
-        return _report(lexical_errors, EXIT_SYNTAX_ERROR)
+        _print_diagnostics(lexical_errors)
+        return EXIT_SYNTAX_ERROR
 
     parser = RecipeParser()
     program = parser.parse_tokens(tokens)
     if parser.errors:
-        return _report(parser.errors, EXIT_SYNTAX_ERROR)
+        _print_diagnostics(parser.errors)
+        return EXIT_SYNTAX_ERROR
     if args.ast:
         print(format_tree(program))
 
     semantic = analyze(program)
     if args.simbolos:
         print(semantic.symbols.format())
-    exit_code = EXIT_SEMANTIC_ERROR if semantic.errors else EXIT_OK
-    return _report([*semantic.errors, *semantic.warnings], exit_code)
+    _print_diagnostics([*semantic.errors, *semantic.warnings])
+    if semantic.errors:
+        return EXIT_SEMANTIC_ERROR
+
+    if not (args.tokens or args.ast or args.simbolos):
+        results = interpret(program)
+        if results:
+            print("\n\n".join(format_result(result) for result in results))
+    return EXIT_OK
 
 
-def _report(diagnostics: Sequence[ReceitaError], exit_code: int) -> int:
+def _print_diagnostics(diagnostics: Sequence[ReceitaError]) -> None:
     for diagnostic in diagnostics:
         print(diagnostic, file=sys.stderr)
-    return exit_code
 
 
 def _use_utf8_output() -> None:
